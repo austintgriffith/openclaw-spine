@@ -146,6 +146,7 @@ await fastify.register(cors, { origin: true });
 await fastify.register(multipart);
 
 fastify.get('/health', async () => ({ ok: true, time: nowIso() }));
+fastify.get('/healthz', async () => ({ ok: true, time: nowIso() }));  // deprecated alias
 
 /* ─── POST /jobs (head only) ─── */
 

@@ -26,6 +26,7 @@ Both will be accepted. Remove the old one once all clients have switched.
 | Method | Path | Who | Description |
 |--------|------|-----|-------------|
 | `GET`  | `/health` | anyone | Health check |
+| `GET`  | `/healthz` | anyone | Health check *(deprecated alias)* |
 | `POST` | `/jobs` | head | Create job |
 | `GET`  | `/jobs` | head + claws | List jobs (filtered by role/target) |
 | `GET`  | `/jobs/:id` | head + claws | Get single job |
@@ -100,7 +101,7 @@ cd spine
 npm i
 npm run start      # production
 npm run dev        # with .env file
-npm test           # integration tests (47 tests)
+npm test           # integration tests (49 tests)
 ```
 
 ## Storage
