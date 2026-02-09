@@ -1,6 +1,6 @@
 # OpenClaw Spine (v0)
 
-A tiny file-backed job queue with per-agent bearer tokens.
+A file-backed job queue with bearer token authentication for distributed agents.
 
 - Port: `36725` (default)
 - Health: `GET /health`
@@ -30,15 +30,17 @@ Both will be accepted. Remove the old one once all clients have switched.
 | `GET`  | `/jobs` | head + claws | List jobs (filtered by role/target) |
 | `GET`  | `/jobs/:id` | head + claws | Get single job |
 | `POST` | `/jobs/:id/claim` | claws | Claim a queued job (increments attempts) |
-| `POST` | `/jobs/:id/heartbeat` | owner/head | Extend lease |
-| `POST` | `/jobs/:id/complete` | owner/head | Mark done |
-| `POST` | `/jobs/:id/fail` | owner/head | Fail (requeues by default, or terminal) |
-| `POST` | `/jobs/:id/release` | owner/head | Release back to queued (no attempt increment) |
+| `POST` | `/jobs/:id/heartbeat` | claws | Extend lease |
+| `POST` | `/jobs/:id/complete` | claws | Mark done |
+| `POST` | `/jobs/:id/fail` | claws | Fail (requeues by default, or terminal) |
+| `POST` | `/jobs/:id/release` | claws | Release back to queued (no attempt increment) |
 | `POST` | `/jobs/:id/comment` | head + claws | Add a comment |
 | `POST` | `/blobs` | head + claws | Upload blob (multipart) |
 
 ### Ownership
-Only the current claimant (the claw that called `/claim`) can call `/heartbeat`, `/complete`, `/fail`, and `/release` on a running job. **Head always has admin override** on these endpoints.
+"Owner" refers to the claw that successfully claimed a job via `/claim`.
+
+Only the current claimant can call `/heartbeat`, `/complete`, `/fail`, and `/release` on a running job. **Head always has admin override** on these endpoints.
 
 ### Job Lifecycle
 ```
@@ -52,7 +54,7 @@ queued → (claim) → running → (complete) → done
 
 ### Attempts & maxAttempts
 - Each `/claim` increments `attempts` by 1.
-- If `attempts >= maxAttempts` at claim time, the job is marked `dead`.
+- If the new `attempts` count reaches `maxAttempts`, the job is immediately marked `dead` instead of `running`.
 - `/fail` with `requeue: true` (default) returns to queued if under limit.
 - `/release` does NOT increment attempts (it's a voluntary give-back).
 - Default `maxAttempts`: 5 (set via `DEFAULT_MAX_ATTEMPTS` env).
@@ -95,6 +97,8 @@ Returns a running job to queued without counting as a failure.
 | `RIGHT_CLAW_TOKENS` | — | CSV right claw tokens |
 
 ## Run
+Set at least one token (e.g. `HEAD_TOKEN=test123`) before starting.
+
 ```bash
 cd spine
 npm i
