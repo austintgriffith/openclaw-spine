@@ -1,0 +1,18 @@
+{
+  "name": "openclaw-spine",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "OpenClaw Spine: file-backed job queue + auth tokens",
+  "scripts": {
+    "dev": "node --env-file=.env src/server.js",
+    "start": "node --env-file=.env src/server.js",
+    "test": "node test/spine.test.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/multipart": "^9.4.0",
+    "fastify": "^5.7.4",
+    "nanoid": "^5.1.6"
+  }
+}
