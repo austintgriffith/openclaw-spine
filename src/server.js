@@ -145,7 +145,7 @@ const fastify = Fastify({ logger: true });
 await fastify.register(cors, { origin: true });
 await fastify.register(multipart);
 
-fastify.get('/healthz', async () => ({ ok: true, time: nowIso() }));
+fastify.get('/health', async () => ({ ok: true, time: nowIso() }));
 
 /* ─── POST /jobs (head only) ─── */
 

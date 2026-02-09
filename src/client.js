@@ -53,7 +53,8 @@ export class SpineClient {
 
   _req(opts) { return spineRequest(this.baseUrl, this.token, opts); }
 
-  healthz()                        { return this._req({ path: '/healthz' }); }
+  health()                         { return this._req({ path: '/health' }); }
+  healthz()                        { return this._req({ path: '/healthz' }); }  // deprecated alias
   createJob(body)                  { return this._req({ method: 'POST', path: '/jobs', body }); }
   listJobs(query)                  { return this._req({ path: '/jobs', query }); }
   getJob(id)                       { return this._req({ path: `/jobs/${id}` }); }

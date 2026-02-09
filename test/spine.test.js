@@ -63,7 +63,7 @@ async function startServer() {
   // Wait for server to be ready
   for (let i = 0; i < 50; i++) {
     try {
-      const r = await head.healthz();
+      const r = await head.health();
       if (r.status === 200) return;
     } catch {}
     await sleep(100);
@@ -79,11 +79,15 @@ async function stopServer() {
 
 /* ─── tests ─── */
 
-async function testHealthz() {
-  console.log('\n--- healthz ---');
-  const r = await head.healthz();
-  assertEq(r.status, 200, 'healthz returns 200');
-  assert(r.json.ok === true, 'healthz body ok');
+async function testHealth() {
+  console.log('\n--- health ---');
+  const r = await head.health();
+  assertEq(r.status, 200, '/health returns 200');
+  assert(r.json.ok === true, '/health body ok');
+  // deprecated /healthz alias still works
+  const rz = await head.healthz();
+  assertEq(rz.status, 200, '/healthz deprecated alias returns 200');
+  assert(rz.json.ok === true, '/healthz body ok');
 }
 
 async function testAuthFails() {
@@ -280,7 +284,7 @@ async function testAnyTarget() {
 async function run() {
   try {
     await startServer();
-    await testHealthz();
+    await testHealth();
     await testAuthFails();
     await testTokenRotation();
     const jobId = await testCreateAndList();

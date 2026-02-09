@@ -3,7 +3,7 @@
 A tiny file-backed job queue with per-agent bearer tokens.
 
 - Port: `36725` (default)
-- Health: `GET /healthz`
+- Health: `GET /health`
 - Data dir: `./data/{jobs,events,blobs}`
 
 ## Auth
@@ -25,7 +25,7 @@ Both will be accepted. Remove the old one once all clients have switched.
 
 | Method | Path | Who | Description |
 |--------|------|-----|-------------|
-| `GET`  | `/healthz` | anyone | Health check |
+| `GET`  | `/health` | anyone | Health check |
 | `POST` | `/jobs` | head | Create job |
 | `GET`  | `/jobs` | head + claws | List jobs (filtered by role/target) |
 | `GET`  | `/jobs/:id` | head + claws | Get single job |
