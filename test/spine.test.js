@@ -9,7 +9,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { SpineClient } from '../src/client.js';
@@ -41,13 +41,25 @@ function assertEq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}
 
 async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+const SKILL_MD_CONTENT = `---
+name: test-skill
+---
+
+# Test Skill
+
+This is a test skill markdown file.
+`;
+
 async function startServer() {
   tmpDir = await mkdtemp(path.join(tmpdir(), 'spine-test-'));
+  const skillMdPath = path.join(tmpDir, 'SKILL.md');
+  await writeFile(skillMdPath, SKILL_MD_CONTENT, 'utf8');
   const env = {
     ...process.env,
     SPINE_PORT: String(PORT),
     SPINE_HOST: '127.0.0.1',
     SPINE_DATA_DIR: tmpDir,
+    SPINE_SKILL_MD_PATH: skillMdPath,
     HEAD_TOKEN,
     HEAD_TOKENS: `${HEAD_TOKEN},${HEAD_TOKEN2}`,
     LEFT_CLAW_TOKEN: LC_TOKEN,
@@ -88,6 +100,19 @@ async function testHealth() {
   const rz = await head.healthz();
   assertEq(rz.status, 200, '/healthz deprecated alias returns 200');
   assert(rz.json.ok === true, '/healthz body ok');
+}
+
+async function testSkillMd() {
+  console.log('\n--- skill.md ---');
+  // Public endpoint — no auth needed
+  const r = await bad.skillMd();
+  assertEq(r.status, 200, '/skill.md returns 200 without auth');
+  assert(r.text.includes('# Test Skill'), '/skill.md contains expected content');
+  assert(r.text.includes('name: test-skill'), '/skill.md contains frontmatter');
+  // Ensure no secrets leak (tokens should not appear in the response)
+  assert(!r.text.includes(HEAD_TOKEN), '/skill.md does not leak HEAD_TOKEN');
+  assert(!r.text.includes(LC_TOKEN), '/skill.md does not leak LEFT_CLAW_TOKEN');
+  assert(!r.text.includes(RC_TOKEN), '/skill.md does not leak RIGHT_CLAW_TOKEN');
 }
 
 async function testAuthFails() {
@@ -285,6 +310,7 @@ async function run() {
   try {
     await startServer();
     await testHealth();
+    await testSkillMd();
     await testAuthFails();
     await testTokenRotation();
     const jobId = await testCreateAndList();

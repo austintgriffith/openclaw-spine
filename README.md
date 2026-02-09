@@ -26,6 +26,7 @@ Both will be accepted. Remove the old one once all clients have switched.
 | Method | Path | Who | Description |
 |--------|------|-----|-------------|
 | `GET`  | `/health` | anyone | Health check |
+| `GET`  | `/skill.md` | anyone | Serve skill markdown (public, no auth) |
 | `POST` | `/jobs` | head | Create job |
 | `GET`  | `/jobs` | head + claws | List jobs (filtered by role/target) |
 | `GET`  | `/jobs/:id` | head + claws | Get single job |
@@ -89,6 +90,7 @@ Returns a running job to queued without counting as a failure.
 | `LEASE_SECONDS` | `300` | Lease duration per claim/heartbeat |
 | `REAPER_INTERVAL_MS` | `30000` | Expiry reaper scan interval |
 | `DEFAULT_MAX_ATTEMPTS` | `5` | Default max claim attempts |
+| `SPINE_SKILL_MD_PATH` | `./SKILL.md` | Path to SKILL.md served at `/skill.md` |
 | `HEAD_TOKEN` | — | Single head token |
 | `HEAD_TOKENS` | — | CSV head tokens (rotation) |
 | `LEFT_CLAW_TOKEN` | — | Single left claw token |

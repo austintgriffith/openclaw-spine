@@ -25,6 +25,7 @@ const DATA_DIR      = mustEnv('SPINE_DATA_DIR', path.resolve('data'));
 const LEASE_SECONDS = parseInt(mustEnv('LEASE_SECONDS', '300'), 10);
 const REAPER_INTERVAL_MS = parseInt(optEnv('REAPER_INTERVAL_MS', '30000'), 10);
 const DEFAULT_MAX_ATTEMPTS = parseInt(optEnv('DEFAULT_MAX_ATTEMPTS', '5'), 10);
+const SKILL_MD_PATH = optEnv('SPINE_SKILL_MD_PATH', path.resolve('SKILL.md'));
 
 /* ─── token rotation support ───
  * Accepts either single-value env (HEAD_TOKEN) or CSV env (HEAD_TOKENS).
@@ -147,6 +148,22 @@ await fastify.register(multipart);
 
 fastify.get('/health', async () => ({ ok: true, time: nowIso() }));
 fastify.get('/healthz', async () => ({ ok: true, time: nowIso() }));  // deprecated alias
+
+/* ─── GET /skill.md (public, no auth) ─── */
+
+let _skillMdCache = null;
+
+fastify.get('/skill.md', async (_req, reply) => {
+  if (_skillMdCache === null) {
+    try {
+      _skillMdCache = await fs.readFile(SKILL_MD_PATH, 'utf8');
+    } catch (err) {
+      fastify.log.warn({ err: err.message, path: SKILL_MD_PATH }, 'skill.md not found');
+      return reply.code(404).send({ error: 'skill_md_not_found' });
+    }
+  }
+  return reply.type('text/markdown; charset=utf-8').send(_skillMdCache);
+});
 
 /* ─── POST /jobs (head only) ─── */
 
