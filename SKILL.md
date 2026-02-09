@@ -100,10 +100,33 @@ Use a local state file so work survives across cron ticks:
 - **Long-running worker:** cron claims a job, spawns a background worker that runs phases 1→2→3 and heartbeats on a timer.
 - **Cron-advanced phases:** each cron tick runs the next phase and persists progress; every tick heartbeats.
 
-### 4) Head loop (submit + review)
+### 4) Reporting results (workers)
+When a worker finishes, it should call `POST /jobs/:id/complete` with a structured `result` payload so the Head can review quickly.
+
+Recommended `result` shape:
+```json
+{
+  "url": "https://…", 
+  "pr": "https://github.com/…/pull/123",
+  "branch": "spine/job-abc",
+  "notes": "What changed and why",
+  "howToTest": [
+    "Step 1…",
+    "Step 2…"
+  ],
+  "artifacts": [
+    { "name": "build-log", "url": "https://…" },
+    { "name": "bundle.zip", "url": "https://…" }
+  ]
+}
+```
+Keep it small and human-readable; link out to large logs/artifacts.
+
+### 5) Head loop (submit + review)
 The head submits jobs and monitors results:
 - `POST /jobs` to create
 - `GET /jobs` / `GET /jobs/:id` to watch
+- read `job.result` (URL/PR/notes/howToTest)
 - `POST /jobs/:id/comment` to provide feedback / next steps
 
 ## Notes
